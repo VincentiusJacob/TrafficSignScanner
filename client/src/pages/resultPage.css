@@ -1,0 +1,43 @@
+.result-page {
+  width: 100%;
+  height: 100vh;
+
+  background-color: #043252;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.result-page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  width: 60%;
+  background-color: #03829c;
+  color: white;
+}
+
+.result-page-content > h2 {
+  font-family: "poppins";
+  padding: 1em;
+  font-size: 2em;
+}
+
+.result-page-content > img {
+  width: 100%;
+  height: 200px;
+  border: 1px solid;
+}
+
+.result-page-details {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.result-page-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
