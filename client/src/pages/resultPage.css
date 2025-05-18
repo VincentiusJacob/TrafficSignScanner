@@ -1,11 +1,10 @@
 .result-page {
-  width: 100%;
-  height: 100vh;
-
-  background-color: #043252;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  height: 100vh;
+  background-color: #043252;
 }
 
 .result-page-content {
@@ -16,6 +15,8 @@
   width: 60%;
   background-color: #03829c;
   color: white;
+  border-radius: 12px;
+  margin-top: 5%;
 }
 
 .result-page-content > h2 {
@@ -25,8 +26,8 @@
 }
 
 .result-page-content > img {
-  width: 100%;
-  height: 200px;
+  width: 80%;
+  height: 500px;
   border: 1px solid;
 }
 
@@ -34,10 +35,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
+  padding: 2.5em;
+}
+
+.result-page-details > h3 {
+  font-size: 3em;
+}
+
+.result-page-details > p {
+  font-size: 1.5em;
 }
 
 .result-page-options {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.result-page-options > button {
+  padding: 1.3em 2em;
+  border-radius: 8px;
+  border: none;
+  background-color: #043252;
+  color: white;
 }

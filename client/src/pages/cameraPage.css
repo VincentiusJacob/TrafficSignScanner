@@ -1,0 +1,19 @@
+.camera-page {
+  width: 100%;
+  height: 100vh;
+  background-color: #043252;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2em;
+}
+
+.close-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 1.2em 3.3em;
+  font-size: 1.5em;
+  border-radius: 8px;
+  cursor: pointer;
+}
