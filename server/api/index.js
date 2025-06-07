@@ -135,5 +135,9 @@ app.post("/api/get-sign-description", async (req, res) => {
   }
 });
 
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
+
 // Export untuk Vercel
 module.exports = app;

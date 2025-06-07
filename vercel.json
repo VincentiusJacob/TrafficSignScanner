@@ -5,7 +5,7 @@
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "build"
+        "distDir": "dist" // Sesuaikan dengan output directory dari build client (biasanya 'dist' untuk Vite)
       }
     },
     {
@@ -19,8 +19,11 @@
       "dest": "/server/api/index.js"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/client/$1"
+      "dest": "/client/dist/$1"
     }
   ]
 }
