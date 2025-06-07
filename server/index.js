@@ -4,9 +4,14 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
+const axios = require("axios");
 
 const app = express();
 const PORT = 5500;
+const openAIEndpoint =
+  "https://vince-mb63mgbe-eastus2.cognitiveservices.azure.com";
+const openAIKey =
+  "C57BMul7SGrqi12ymNhUyoTaYnsAuuIajmgVpfW6EA5FHmyKa11eJQQJ99BEACHYHv6XJ3w3AAAAACOGf571";
 
 const pythonPath =
   "/Users/vincentiusjacob/Documents/SignScanner/server/venv/bin/python3";
@@ -83,6 +88,43 @@ app.post("/predict", upload.single("image"), (req, res) => {
     console.log("✅ Clean prediction result:", lastLine);
     res.json({ prediction: lastLine });
   });
+});
+
+app.post("/get-sign-description", async (req, res) => {
+  try {
+    const { signName } = req.body;
+
+    if (!signName) {
+      return res.status(400).json({ error: "No sign name provided" });
+    }
+
+    const prompt = `Describe the following traffic sign in English: "${signName}".`;
+
+    const response = await axios.post(
+      `${openAIEndpoint}/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-12-01-preview`,
+      {
+        messages: [
+          { role: "system", content: "You are a helpful assistant." },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 150,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openAIKey}`,
+        },
+      }
+    );
+
+    const description = response.data.choices[0].message.content.trim();
+
+    res.json({ description });
+  } catch (error) {
+    console.error("Error getting description from GPT-4:", error);
+    res.status(500).json({ error: "Failed to fetch description from GPT-4" });
+  }
 });
 
 app.listen(PORT, () => {

@@ -1,7 +1,11 @@
+"use client";
+
 import axios from "axios";
-import React, { useRef, useState } from "react";
+import type React from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Webcam from "react-webcam";
+import { Camera, Loader2, Zap } from "lucide-react";
 import "./WebcamCapture.css";
 
 const WebcamCapture: React.FC = () => {
@@ -51,20 +55,52 @@ const WebcamCapture: React.FC = () => {
   };
 
   return (
-    <div style={{ textAlign: "center" }}>
-      <Webcam
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={640}
-        height={480}
-      />
-      <br />
-      <button className="predict-btn" onClick={captureAndSend}>
-        Capture & Predict
-      </button>
-      {loading && <p>Loading...</p>}
-      {result && <p>Prediction: {result}</p>}
+    <div className="webcam-capture">
+      <div className="webcam-wrapper">
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          width={640}
+          height={480}
+          className="webcam-video"
+        />
+
+        {/* Scan overlay */}
+        <div className="scan-overlay">
+          <div className="scan-line"></div>
+        </div>
+      </div>
+
+      <div className="capture-controls">
+        <button
+          className={`predict-btn ${loading ? "loading" : ""}`}
+          onClick={captureAndSend}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="btn-icon spinning" size={20} />
+              <span>Analyzing...</span>
+            </>
+          ) : (
+            <>
+              <Camera className="btn-icon" size={20} />
+              <span>Capture & Predict</span>
+              <Zap className="btn-icon-accent" size={16} />
+            </>
+          )}
+        </button>
+
+        {loading && (
+          <div className="loading-indicator">
+            <div className="loading-bar">
+              <div className="loading-progress"></div>
+            </div>
+            <p className="loading-text">Processing your image...</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

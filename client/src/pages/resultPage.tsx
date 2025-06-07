@@ -1,6 +1,12 @@
+"use client";
+
+import type React from "react";
+
 import { useLocation, useNavigate } from "react-router-dom";
-import Share from "../assets/share.png";
+import { useState, useEffect } from "react";
+import { Share2, RefreshCw, AlertTriangle, Info } from "lucide-react";
 import "./resultPage.css";
+import axios from "axios";
 
 const labelMap: Record<string, string> = {
   0: "Bicycles crossing",
@@ -64,22 +70,93 @@ const ResultPage: React.FC = () => {
   };
 
   const signName = labelMap[state.prediction] || "Unknown Sign";
+  const [description, setDescription] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDescription = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.post(
+          "http://localhost:5500/get-sign-description",
+          {
+            signName: signName,
+          }
+        );
+        setDescription(response.data.description);
+      } catch (error) {
+        console.error("Error fetching description:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDescription();
+  }, [signName]);
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `Traffic Sign: ${signName}`,
+          text: `I identified a ${signName} traffic sign!`,
+          url: window.location.href,
+        })
+        .catch((error) => console.log("Error sharing", error));
+    } else {
+      alert("Web Share API not supported in your browser");
+    }
+  };
 
   return (
     <div className="result-page">
-      <div className="result-page-content">
-        <h2> RESULT </h2>
-        <img
-          src={state.image}
-          alt="Uploaded Traffic Sign"
-          style={{ width: "300px" }}
-        />
-        <div className="result-page-details">
-          <h3>{signName}</h3>
-          <p>Model Output: {state.prediction}</p>
-          <div className="result-page-options">
-            <button onClick={() => navigate("/")}>TRY AGAIN</button>
-            <img src={Share} alt="share result" style={{ width: "30px" }} />
+      <div className="result-container">
+        <div className="result-header">
+          <h1>Traffic Sign Recognition</h1>
+          <div className="result-badge">Result</div>
+        </div>
+
+        <div className="result-content">
+          <div className="image-container">
+            <img
+              src={state.image || "/placeholder.svg"}
+              alt="Uploaded Traffic Sign"
+              className="result-image"
+            />
+            <div className="image-overlay">
+              <AlertTriangle className="overlay-icon" />
+            </div>
+          </div>
+
+          <div className="result-details">
+            <h2 className="sign-name">{signName}</h2>
+
+            <div className="description-container">
+              <div className="description-header">
+                <Info size={20} />
+                <h3>Description</h3>
+              </div>
+
+              <div className="description-content">
+                {isLoading ? (
+                  <div className="loading-spinner"></div>
+                ) : (
+                  <p>{description || "No description available"}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="action-buttons">
+              <button className="try-again-btn" onClick={() => navigate("/")}>
+                <RefreshCw size={18} />
+                <span>Try Again</span>
+              </button>
+
+              <button className="share-btn" onClick={handleShare}>
+                <Share2 size={18} />
+                <span>Share</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

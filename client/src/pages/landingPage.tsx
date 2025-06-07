@@ -1,20 +1,24 @@
+"use client";
+
+import type React from "react";
+
 import "./landingPage.css";
-import background from "../assets/backgroundDesktop.png";
-import camera from "../assets/camera.png";
-import upload from "../assets/uploadimg.png";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useRef, useState } from "react";
+import { Camera, Upload, Zap, Shield, Eye, Sparkles } from "lucide-react";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageData, setImageData] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsUploading(true);
     const formData = new FormData();
     formData.append("image", file);
 
@@ -43,6 +47,8 @@ const LandingPage: React.FC = () => {
       } catch (error) {
         console.error("Upload prediction failed:", error);
         alert("Failed to get prediction.");
+      } finally {
+        setIsUploading(false);
       }
     };
 
@@ -54,39 +60,95 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div
-      className="landing-page"
-      style={{
-        backgroundImage: `url(${background})`,
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-      }}
-    >
-      <div className="landing-page-content">
-        <h1>
-          Discover Traffic Signs <br />
-          and Learn Their Meaning
-        </h1>
-        <span> Scan and identify traffic signs instantly with AI </span>
+    <div className="landing-page">
+      <div className="background-elements">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
+        <div className="floating-shapes">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+        </div>
+      </div>
 
-        <div className="landing-page-buttons">
-          <button className="scan-btn" onClick={() => navigate("/camera")}>
-            <img src={camera} alt="scan sign" />
-            <span> Take a picture </span>
-          </button>
+      <div className="landing-container">
+        <div className="hero-section">
+          <div className="hero-badge">
+            <Sparkles size={16} />
+            <span>AI-Powered Recognition</span>
+          </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            ref={fileInputRef}
-            onChange={handleUpload}
-          />
+          <h1 className="hero-title">
+            Discover Traffic Signs
+            <br />
+            <span className="gradient-text">Learn Their Meaning</span>
+          </h1>
 
-          <button className="uploadimg-btn" onClick={triggerUpload}>
-            <img src={upload} alt="upload image" />
-            <span> Upload image</span>
-          </button>
+          <p className="hero-subtitle">
+            Scan and identify traffic signs instantly with advanced AI
+            technology.
+            <br />
+            Stay safe on the road with instant sign recognition and detailed
+            explanations.
+          </p>
+
+          <div className="action-buttons">
+            <button
+              className="primary-btn scan-btn"
+              onClick={() => navigate("/camera")}
+            >
+              <Camera size={24} />
+              <span>Take a Picture</span>
+              <div className="btn-glow"></div>
+            </button>
+
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              ref={fileInputRef}
+              onChange={handleUpload}
+            />
+
+            <button
+              className={`secondary-btn upload-btn ${
+                isUploading ? "loading" : ""
+              }`}
+              onClick={triggerUpload}
+              disabled={isUploading}
+            >
+              <Upload size={24} />
+              <span>{isUploading ? "Uploading..." : "Upload Image"}</span>
+              <div className="btn-glow"></div>
+            </button>
+          </div>
+
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Eye size={24} />
+              </div>
+              <h3>Instant Recognition</h3>
+              <p>Get immediate results with our advanced AI model</p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Shield size={24} />
+              </div>
+              <h3>Road Safety</h3>
+              <p>Learn traffic rules and stay safe on the road</p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">
+                <Zap size={24} />
+              </div>
+              <h3>Lightning Fast</h3>
+              <p>Process images in seconds with real-time analysis</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

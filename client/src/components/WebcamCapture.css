@@ -1,9 +1,302 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --primary-color: #3a36e0;
+  --secondary-color: #6c63ff;
+  --accent-color: #f50057;
+  --success-color: #00d4aa;
+  --text-primary: #ffffff;
+  --text-secondary: #b8b8d1;
+  --gradient-start: #6c63ff;
+  --gradient-end: #3a36e0;
+}
+
+.webcam-capture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.webcam-wrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    45deg,
+    rgba(108, 99, 255, 0.1),
+    rgba(245, 0, 87, 0.1)
+  );
+  padding: 4px;
+}
+
+.webcam-video {
+  display: block;
+  border-radius: 12px;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 640px;
+}
+
+.scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-line {
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--success-color),
+    transparent
+  );
+  animation: scanMove 2s linear infinite;
+  box-shadow: 0 0 10px var(--success-color);
+}
+
+@keyframes scanMove {
+  0% {
+    transform: translateY(-200px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(200px);
+    opacity: 0;
+  }
+}
+
+.capture-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
 .predict-btn {
-  background-color: #00c814;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  background: linear-gradient(135deg, var(--success-color), #00b894);
   color: white;
   border: none;
-  padding: 1.2em 2.5em;
-  font-size: 1.5em;
-  border-radius: 8px;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 212, 170, 0.4);
+  position: relative;
+  overflow: hidden;
+  min-width: 220px;
+  font-family: "Poppins", sans-serif;
+}
+
+.predict-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.predict-btn:hover::before {
+  left: 100%;
+}
+
+.predict-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 212, 170, 0.6);
+}
+
+.predict-btn:active {
+  transform: translateY(0);
+}
+
+.predict-btn.loading {
+  background: linear-gradient(
+    135deg,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  cursor: not-allowed;
+  animation: pulse 2s infinite;
+}
+
+.predict-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.btn-icon {
+  transition: transform 0.3s ease;
+}
+
+.btn-icon-accent {
+  color: #ffd700;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.8;
+  }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 25px rgba(108, 99, 255, 0.8);
+  }
+}
+
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.loading-bar {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--gradient-start),
+    var(--gradient-end)
+  );
+  border-radius: 2px;
+  animation: loadingProgress 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+}
+
+@keyframes loadingProgress {
+  0% {
+    width: 0%;
+    transform: translateX(-100%);
+  }
+  50% {
+    width: 100%;
+    transform: translateX(0%);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
+  }
+}
+
+.loading-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .webcam-capture {
+    gap: 1.5rem;
+  }
+
+  .webcam-wrapper {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .predict-btn {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+    min-width: 200px;
+  }
+
+  .capture-controls {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .webcam-wrapper {
+    max-width: 320px;
+  }
+
+  .predict-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    min-width: 180px;
+  }
+
+  .btn-icon-accent {
+    display: none;
+  }
 }
