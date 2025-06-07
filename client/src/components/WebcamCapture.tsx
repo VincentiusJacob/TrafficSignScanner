@@ -5,13 +5,26 @@ import type React from "react";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Webcam from "react-webcam";
-import { Camera, Loader2, Zap } from "lucide-react";
+import { Camera, Loader2, Zap, RefreshCw } from "lucide-react";
 import "./WebcamCapture.css";
 
 const WebcamCapture: React.FC = () => {
   const navigate = useNavigate();
   const webcamRef = useRef<Webcam>(null);
   const [loading, setLoading] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment"
+  );
+
+  const videoConstraints = {
+    width: 640,
+    height: 480,
+    facingMode: facingMode,
+  };
+
+  const toggleCamera = () => {
+    setFacingMode((prevMode) => (prevMode === "user" ? "environment" : "user"));
+  };
 
   const captureAndSend = async () => {
     if (!webcamRef.current) return;
@@ -60,8 +73,7 @@ const WebcamCapture: React.FC = () => {
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
-          width={640}
-          height={480}
+          videoConstraints={videoConstraints}
           className="webcam-video"
         />
 
@@ -69,6 +81,14 @@ const WebcamCapture: React.FC = () => {
         <div className="scan-overlay">
           <div className="scan-line"></div>
         </div>
+
+        <button
+          className="camera-toggle"
+          onClick={toggleCamera}
+          aria-label="Toggle camera"
+        >
+          <RefreshCw size={20} />
+        </button>
       </div>
 
       <div className="capture-controls">
