@@ -28,7 +28,7 @@ const LandingPage: React.FC = () => {
 
       try {
         const response = await axios.post(
-          "http://localhost:5500/predict",
+          "https://traffic-sign-scanner.vercel.app/predict",
           formData,
           {
             headers: {
