@@ -11,7 +11,7 @@ import { Camera, Upload, Zap, Shield, Eye, Sparkles } from "lucide-react";
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [imageData, setImageData] = useState<string | null>(null);
+
   const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +25,6 @@ const LandingPage: React.FC = () => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Image = reader.result as string;
-      setImageData(base64Image);
 
       try {
         const response = await axios.post(

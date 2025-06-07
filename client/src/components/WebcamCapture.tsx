@@ -11,7 +11,6 @@ import "./WebcamCapture.css";
 const WebcamCapture: React.FC = () => {
   const navigate = useNavigate();
   const webcamRef = useRef<Webcam>(null);
-  const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const captureAndSend = async () => {
