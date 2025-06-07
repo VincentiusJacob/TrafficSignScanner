@@ -78,7 +78,7 @@ const ResultPage: React.FC = () => {
       setIsLoading(true);
       try {
         const response = await axios.post(
-          "https://traffic-sign-scanner.vercel.app/api/get-sign-description",
+          "https://traffic-sign-scanner-server.vercel.app/api/get-sign-description",
           {
             signName: signName,
           }
