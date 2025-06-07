@@ -6,14 +6,22 @@
       "use": "@vercel/react"
     },
     {
-      "src": "server/index.js",
+      "src": "api/predict.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/get-sign-description.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "/client/$1"
+      "src": "/api/predict",
+      "dest": "/api/predict.js"
+    },
+    {
+      "src": "/api/get-sign-description",
+      "dest": "/api/get-sign-description.js"
     }
   ]
 }
