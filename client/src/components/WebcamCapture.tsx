@@ -34,7 +34,7 @@ const WebcamCapture: React.FC = () => {
         formData.append("image", blob, "webcam.jpg");
 
         const response = await axios.post(
-          "https://traffic-sign-scanner.vercel.app/predict",
+          "https://traffic-sign-scanner.vercel.app/api/predict",
           formData
         );
 
