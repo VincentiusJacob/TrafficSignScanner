@@ -3,25 +3,24 @@
   "builds": [
     {
       "src": "client/package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
     },
     {
-      "src": "api/predict.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/get-sign-description.js",
+      "src": "server/api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/predict",
-      "dest": "/api/predict.js"
+      "src": "/api/(.*)",
+      "dest": "/server/api/index.js"
     },
     {
-      "src": "/api/get-sign-description",
-      "dest": "/api/get-sign-description.js"
+      "src": "/(.*)",
+      "dest": "/client/$1"
     }
   ]
 }

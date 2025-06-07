@@ -7,18 +7,29 @@ const { spawn } = require("child_process");
 const axios = require("axios");
 
 const app = express();
-const PORT = 5500;
+
 const openAIEndpoint =
   "https://vince-mb63mgbe-eastus2.cognitiveservices.azure.com";
 const openAIKey =
   "C57BMul7SGrqi12ymNhUyoTaYnsAuuIajmgVpfW6EA5FHmyKa11eJQQJ99BEACHYHv6XJ3w3AAAAACOGf571";
 
-const pythonPath =
-  "/Users/vincentiusjacob/Documents/SignScanner/server/venv/bin/python3";
-console.log("🐍 Using Python:", pythonPath);
+// ⚠️ Di Vercel, Python path berbeda
+const pythonPath = process.env.VERCEL
+  ? "python3"
+  : "/Users/vincentiusjacob/Documents/SignScanner/server/venv/bin/python3";
 
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+  // Update CORS untuk production
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://your-vercel-app.vercel.app", // Ganti dengan domain Vercel kamu nanti
+  ];
+
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.sendStatus(204);
@@ -27,17 +38,16 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// ✅ Multer config
+// ⚠️ Vercel menggunakan /tmp untuk temporary files
 const storage = multer.diskStorage({
-  destination: "uploads/",
+  destination: "/tmp/",
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 const upload = multer({ storage });
 
-// ✅ Prediction route
-app.post("/predict", upload.single("image"), (req, res) => {
+app.post("/api/predict", upload.single("image"), (req, res) => {
   const imagePath = req.file?.path;
   if (!imagePath) {
     console.log("❌ No image uploaded");
@@ -47,10 +57,9 @@ app.post("/predict", upload.single("image"), (req, res) => {
   const stats = fs.statSync(imagePath);
   console.log(`📏 File saved: ${imagePath} (${stats.size} bytes)`);
 
-  const cmd = `${pythonPath} predict.py ${imagePath}`;
-  console.log("📡 Running command:", cmd);
-
-  const python = spawn(pythonPath, ["predict.py", imagePath]);
+  // ⚠️ Path ke predict.py perlu disesuaikan
+  const scriptPath = path.join(__dirname, "../predict.py");
+  const python = spawn(pythonPath, [scriptPath, imagePath]);
 
   let result = "";
   let errorMsg = "";
@@ -90,7 +99,7 @@ app.post("/predict", upload.single("image"), (req, res) => {
   });
 });
 
-app.post("/get-sign-description", async (req, res) => {
+app.post("/api/get-sign-description", async (req, res) => {
   try {
     const { signName } = req.body;
 
@@ -119,7 +128,6 @@ app.post("/get-sign-description", async (req, res) => {
     );
 
     const description = response.data.choices[0].message.content.trim();
-
     res.json({ description });
   } catch (error) {
     console.error("Error getting description from GPT-4:", error);
@@ -127,6 +135,5 @@ app.post("/get-sign-description", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+// Export untuk Vercel
+module.exports = app;
