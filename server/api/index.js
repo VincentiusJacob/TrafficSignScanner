@@ -8,9 +8,9 @@ const axios = require("axios");
 const app = express();
 
 const openAIEndpoint =
-  "https://vince-mb63mgbe-eastus2.cognitiveservices.azure.com";
+  "https://vince-mbmcn9kw-swedencentral.cognitiveservices.azure.com";
 const openAIKey =
-  "C57BMul7SGrqi12ymNhUyoTaYnsAuuIajmgVpfW6EA5FHmyKa11eJQQJ99BEACHYHv6XJ3w3AAAAACOGf571";
+  "JwJT4BdMxNqsZgp8GFvbuusbUVeCsXL9Q8Xj6lI9GXENW1nEP0qbJQQJ99BFACfhMk5XJ3w3AAAAACOG05EX";
 
 // CORS untuk semua origin (sementara untuk testing)
 app.use((req, res, next) => {
@@ -65,7 +65,7 @@ app.post("/api/get-sign-description", async (req, res) => {
     const prompt = `Describe the following traffic sign in English: "${signName}".`;
 
     const response = await axios.post(
-      `${openAIEndpoint}/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-12-01-preview`,
+      `${openAIEndpoint}/openai/deployments/gpt-4o-mini-signscanner/chat/completions?api-version=2025-01-01-preview`,
       {
         messages: [
           { role: "system", content: "You are a helpful assistant." },
