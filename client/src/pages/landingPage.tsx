@@ -273,24 +273,6 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Stats Section */}
-          <div className="stats-section">
-            <div className="stat-item">
-              <div className="stat-number">99.9%</div>
-              <div className="stat-label">Accuracy</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-number">0.5s</div>
-              <div className="stat-label">Processing</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-number">50+</div>
-              <div className="stat-label">Sign Types</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
