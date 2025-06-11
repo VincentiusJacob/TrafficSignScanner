@@ -68,7 +68,7 @@ export async function predictTrafficSign(imageFile: File): Promise<{
 
     // Call your prediction API endpoint
     const response = await fetch(
-      "https://traffic-sign-scanner-server.vercel.app//api/predict",
+      "https://traffic-sign-scanner-server.vercel.app/api/predict",
       {
         method: "POST",
         body: formData,
