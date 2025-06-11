@@ -13,7 +13,7 @@ import {
   Sparkles,
   AlertTriangle,
 } from "lucide-react";
-import { predictTrafficSign, createImageElement } from "../utils/modelUtils";
+import axios from "axios";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,46 +43,84 @@ const LandingPage: React.FC = () => {
         );
       }
 
-      console.log("🖼️ Creating image element...");
-      const imageElement = await createImageElement(file);
-
-      console.log("🤖 Running AI prediction...");
-      const result = await predictTrafficSign(imageElement);
-
       // Create base64 image for display
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64Image = reader.result as string;
 
-        console.log("✅ Prediction complete, navigating to results...");
-        navigate("/result", {
-          state: {
-            prediction: result.classId.toString(),
-            confidence: result.confidence,
-            image: base64Image,
-            className: result.className,
-          },
-        });
+        try {
+          console.log("🔄 Using API prediction...");
+
+          // Create form data for API
+          const formData = new FormData();
+          formData.append("image", file);
+
+          // Call your existing API
+          const response = await axios.post(
+            "https://traffic-sign-scanner-server.vercel.app/api/predict",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+              timeout: 30000,
+            }
+          );
+
+          console.log("✅ API prediction response:", response.data);
+
+          if (!response.data || !response.data.prediction) {
+            throw new Error("Invalid response from prediction API");
+          }
+
+          // Format result
+          const classId = Number.parseInt(response.data.prediction);
+
+          console.log("✅ Prediction complete, navigating to results...");
+          navigate("/result", {
+            state: {
+              prediction: response.data.prediction,
+              image: base64Image,
+            },
+          });
+        } catch (error: any) {
+          console.error("=== PREDICTION ERROR ===");
+          console.error("Error:", error);
+
+          let errorMessage = "Failed to process the image.";
+
+          if (axios.isAxiosError(error)) {
+            if (error.response) {
+              errorMessage = `Server error (${error.response.status}): ${
+                error.response.data?.error || error.response.statusText
+              }`;
+            } else if (error.request) {
+              errorMessage =
+                "Network error: Cannot connect to server. Please check your internet connection.";
+            } else {
+              errorMessage = `Request error: ${error.message}`;
+            }
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          setError(errorMessage);
+        } finally {
+          setIsProcessing(false);
+        }
       };
+
+      reader.onerror = () => {
+        setError("Failed to read the selected file.");
+        setIsProcessing(false);
+      };
+
       reader.readAsDataURL(file);
     } catch (error: any) {
-      console.error("=== PREDICTION ERROR ===");
+      console.error("=== FILE HANDLING ERROR ===");
       console.error("Error:", error);
 
-      let errorMessage = "Failed to process the image.";
-
-      if (error.message.includes("Failed to load")) {
-        errorMessage =
-          "Failed to load the AI model. Please refresh the page and try again.";
-      } else if (error.message.includes("Failed to predict")) {
-        errorMessage =
-          "Failed to analyze the image. Please try with a different image.";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      setError(errorMessage);
-    } finally {
+      setError(error.message || "Failed to process the image.");
       setIsProcessing(false);
     }
   };
@@ -195,7 +233,7 @@ const LandingPage: React.FC = () => {
                 <Zap size={24} />
               </div>
               <h3>Lightning Fast</h3>
-              <p>Process images instantly in your browser</p>
+              <p>Process images instantly with real-time analysis</p>
             </div>
           </div>
         </div>

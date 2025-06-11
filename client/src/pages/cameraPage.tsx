@@ -4,7 +4,7 @@ import type React from "react";
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, RotateCcw, X, Zap } from "lucide-react";
-import { predictTrafficSign } from "../utils/modelUtils";
+import axios from "axios";
 
 const CameraPage: React.FC = () => {
   const navigate = useNavigate();
@@ -77,32 +77,66 @@ const CameraPage: React.FC = () => {
     setError(null);
 
     try {
-      // Create image element from captured data
-      const img = new Image();
-      img.crossOrigin = "anonymous";
+      // Convert base64 to blob
+      const base64Response = await fetch(capturedImage);
+      const blob = await base64Response.blob();
 
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = capturedImage;
+      // Create a File object from the blob
+      const file = new File([blob], "camera-capture.jpg", {
+        type: "image/jpeg",
       });
 
-      console.log("🤖 Running AI prediction on captured image...");
-      const result = await predictTrafficSign(img);
+      // Create form data for API
+      const formData = new FormData();
+      formData.append("image", file);
+
+      // Call your existing API
+      const response = await axios.post(
+        "https://traffic-sign-scanner-server.vercel.app/api/predict",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 30000,
+        }
+      );
+
+      console.log("✅ API prediction response:", response.data);
+
+      if (!response.data || !response.data.prediction) {
+        throw new Error("Invalid response from prediction API");
+      }
 
       console.log("✅ Prediction complete, navigating to results...");
       navigate("/result", {
         state: {
-          prediction: result.classId.toString(),
-          confidence: result.confidence,
+          prediction: response.data.prediction,
           image: capturedImage,
-          className: result.className,
         },
       });
     } catch (error: any) {
       console.error("=== ANALYSIS ERROR ===");
       console.error("Error:", error);
-      setError("Failed to analyze the image. Please try again.");
+
+      let errorMessage = "Failed to analyze the image. Please try again.";
+
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          errorMessage = `Server error (${error.response.status}): ${
+            error.response.data?.error || error.response.statusText
+          }`;
+        } else if (error.request) {
+          errorMessage =
+            "Network error: Cannot connect to server. Please check your internet connection.";
+        } else {
+          errorMessage = `Request error: ${error.message}`;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsProcessing(false);
     }
