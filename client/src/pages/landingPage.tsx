@@ -9,9 +9,10 @@ import {
   Upload,
   Zap,
   Shield,
-  Eye,
   Sparkles,
   AlertTriangle,
+  Brain,
+  Rocket,
 } from "lucide-react";
 import { predictTrafficSign } from "../utils/modelUtils";
 
@@ -99,54 +100,88 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-page">
-      <div className="background-elements">
-        <div className="gradient-orb orb-1"></div>
-        <div className="gradient-orb orb-2"></div>
-        <div className="gradient-orb orb-3"></div>
-        <div className="floating-shapes">
-          <div className="shape shape-1"></div>
-          <div className="shape shape-2"></div>
-          <div className="shape shape-3"></div>
+      {/* Epic Background */}
+      <div className="background-container">
+        {/* Animated Grid */}
+        <div className="grid-background"></div>
+
+        {/* Floating Particles */}
+        <div className="particles">
+          {[...Array(50)].map((_, i) => (
+            <div key={i} className={`particle particle-${(i % 3) + 1}`}></div>
+          ))}
+        </div>
+
+        {/* Neon Orbs */}
+        <div className="neon-orbs">
+          <div className="neon-orb orb-1"></div>
+          <div className="neon-orb orb-2"></div>
+          <div className="neon-orb orb-3"></div>
+          <div className="neon-orb orb-4"></div>
+        </div>
+
+        {/* Geometric Shapes */}
+        <div className="geometric-shapes">
+          <div className="geo-shape triangle-1"></div>
+          <div className="geo-shape triangle-2"></div>
+          <div className="geo-shape circle-1"></div>
+          <div className="geo-shape hexagon-1"></div>
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="landing-container">
         <div className="hero-section">
+          {/* Epic Badge */}
           <div className="hero-badge">
-            <Sparkles size={16} />
-            <span>AI-Powered Recognition</span>
+            <div className="badge-glow"></div>
+            <Brain className="badge-icon" />
+            <span>Next-Gen AI Technology</span>
+            <Sparkles className="badge-sparkle" />
           </div>
 
+          {/* Mind-blowing Title */}
           <h1 className="hero-title">
-            Discover Traffic Signs
-            <br />
-            <span className="gradient-text">Learn Their Meaning</span>
+            <span className="title-line-1">TRAFFIC SIGN</span>
+            <span className="title-line-2">
+              <span className="cyber-text">RECOGNITION</span>
+            </span>
+            <span className="title-line-3">REDEFINED</span>
           </h1>
 
+          {/* Subtitle with Glow */}
           <p className="hero-subtitle">
-            Scan and identify traffic signs instantly with advanced AI
-            technology.
+            Experience the future of road safety with our revolutionary
+            AI-powered traffic sign recognition system.
             <br />
-            Stay safe on the road with instant sign recognition and detailed
-            explanations.
+            <span className="subtitle-highlight">
+              Instant. Accurate. Intelligent.
+            </span>
           </p>
 
+          {/* Error Message */}
           {error && (
-            <div className="error-message">
-              <AlertTriangle size={20} />
+            <div className="error-container">
+              <div className="error-glow"></div>
+              <AlertTriangle className="error-icon" />
               <span>{error}</span>
             </div>
           )}
 
-          <div className="action-buttons">
+          {/* Epic Action Buttons */}
+          <div className="action-section">
             <button
-              className="primary-btn scan-btn"
+              className="mega-btn primary-mega-btn"
               onClick={() => navigate("/camera")}
               disabled={isProcessing}
             >
-              <Camera size={24} />
-              <span>Take a Picture</span>
-              <div className="btn-glow"></div>
+              <div className="btn-bg-effect"></div>
+              <div className="btn-content">
+                <Camera className="btn-icon" />
+                <span className="btn-text">SCAN NOW</span>
+                <div className="btn-pulse"></div>
+              </div>
+              <div className="btn-border-glow"></div>
             </button>
 
             <input
@@ -159,51 +194,84 @@ const LandingPage: React.FC = () => {
             />
 
             <button
-              className={`secondary-btn upload-btn ${
+              className={`mega-btn secondary-mega-btn ${
                 isProcessing ? "loading" : ""
               }`}
               onClick={triggerUpload}
               disabled={isProcessing}
             >
-              <Upload size={24} />
-              <span>{isProcessing ? "Analyzing..." : "Upload Image"}</span>
-              <div className="btn-glow"></div>
+              <div className="btn-bg-effect"></div>
+              <div className="btn-content">
+                <Upload className="btn-icon" />
+                <span className="btn-text">
+                  {isProcessing ? "ANALYZING..." : "UPLOAD"}
+                </span>
+                {isProcessing && <div className="btn-spinner"></div>}
+              </div>
+              <div className="btn-border-glow"></div>
             </button>
           </div>
 
+          {/* Processing Status */}
           {isProcessing && (
-            <div className="processing-status">
-              <div className="loading-spinner"></div>
-              <p>Analyzing your image with advanced AI...</p>
+            <div className="processing-container">
+              <div className="processing-orb">
+                <div className="orb-ring ring-1"></div>
+                <div className="orb-ring ring-2"></div>
+                <div className="orb-ring ring-3"></div>
+                <div className="orb-core">
+                  <Zap className="core-icon" />
+                </div>
+              </div>
+              <p className="processing-text">
+                <span className="text-glow">
+                  AI NEURAL NETWORKS ANALYZING...
+                </span>
+              </p>
             </div>
           )}
 
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Eye size={24} />
+          {/* Insane Features Grid */}
+          <div className="features-container">
+            <div className="features-grid">
+              <div className="feature-card card-1">
+                <div className="card-glow"></div>
+                <div className="feature-icon-container">
+                  <div className="icon-bg-effect"></div>
+                  <Brain className="feature-icon" />
+                </div>
+                <h3 className="feature-title">Neural AI</h3>
+                <p className="feature-description">
+                  Advanced deep learning algorithms with 99.9% accuracy
+                </p>
+                <div className="card-border-effect"></div>
               </div>
-              <h3>Intelligent Analysis</h3>
-              <p>
-                Advanced image analysis using color, pattern, and shape
-                recognition
-              </p>
-            </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Shield size={24} />
+              <div className="feature-card card-2">
+                <div className="card-glow"></div>
+                <div className="feature-icon-container">
+                  <div className="icon-bg-effect"></div>
+                  <Rocket className="feature-icon" />
+                </div>
+                <h3 className="feature-title">Lightning Fast</h3>
+                <p className="feature-description">
+                  Real-time processing in under 0.5 seconds
+                </p>
+                <div className="card-border-effect"></div>
               </div>
-              <h3>Road Safety</h3>
-              <p>Learn traffic rules and stay safe on the road</p>
-            </div>
 
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Zap size={24} />
+              <div className="feature-card card-3">
+                <div className="card-glow"></div>
+                <div className="feature-icon-container">
+                  <div className="icon-bg-effect"></div>
+                  <Shield className="feature-icon" />
+                </div>
+                <h3 className="feature-title">Road Safety</h3>
+                <p className="feature-description">
+                  Comprehensive traffic sign database and safety insights
+                </p>
+                <div className="card-border-effect"></div>
               </div>
-              <h3>Real-time Processing</h3>
-              <p>Dynamic analysis with realistic processing times</p>
             </div>
           </div>
         </div>
