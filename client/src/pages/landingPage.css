@@ -782,7 +782,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   width: 100%;
 }
 
@@ -818,51 +818,13 @@ body {
   color: var(--text-primary);
 }
 
+/* Replace the upload progress bar section with this */
 .upload-progress-track {
-  width: 100%;
-  height: 8px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  overflow: hidden;
+  display: none; /* Hide the old progress bar */
 }
 
 .upload-progress-bar {
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--primary-blue),
-    var(--secondary-purple)
-  );
-  border-radius: 4px;
-  transition: width 0.3s ease-out;
-  position: relative;
-  overflow: hidden;
-}
-
-.upload-progress-bar::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  display: none; /* Hide the old progress bar */
 }
 
 .upload-percentage {
@@ -870,6 +832,198 @@ body {
   font-weight: 700;
   color: var(--text-primary);
   margin-top: 0.5rem;
+}
+
+/* New Circle Loading Animation */
+.upload-circle-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 1rem auto;
+}
+
+.upload-circle-bg {
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--glass-border);
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+.upload-circle-progress {
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-top-color: var(--primary-blue);
+  border-right-color: var(--primary-blue);
+  border-radius: 50%;
+  animation: circle-rotate 1.5s linear infinite;
+  transition: all 0.3s ease;
+}
+
+.upload-circle-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-blue),
+    var(--secondary-purple)
+  );
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.upload-circle-icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--text-primary);
+  animation: float-gentle 3s ease-in-out infinite;
+}
+
+@keyframes circle-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+/* Multiple Circle Rings Animation */
+.upload-circle-rings {
+  position: absolute;
+  inset: 0;
+}
+
+.circle-ring {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  animation: ring-spin 3s linear infinite;
+}
+
+.ring-outer {
+  inset: -10px;
+  border-top-color: var(--accent-teal);
+  border-bottom-color: var(--accent-teal);
+  opacity: 0.6;
+  animation-duration: 4s;
+}
+
+.ring-middle {
+  inset: -5px;
+  border-left-color: var(--secondary-purple);
+  border-right-color: var(--secondary-purple);
+  opacity: 0.4;
+  animation-duration: 3s;
+  animation-direction: reverse;
+}
+
+.ring-inner {
+  inset: 5px;
+  border-top-color: var(--warm-orange);
+  border-bottom-color: var(--warm-orange);
+  opacity: 0.3;
+  animation-duration: 2s;
+}
+
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Orbiting Dots Animation */
+.upload-orbit-dots {
+  position: absolute;
+  inset: 0;
+}
+
+.orbit-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--primary-blue);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform-origin: 60px 0;
+  animation: orbit 3s linear infinite;
+}
+
+.orbit-dot:nth-child(1) {
+  background: var(--primary-blue);
+  animation-delay: 0s;
+}
+
+.orbit-dot:nth-child(2) {
+  background: var(--secondary-purple);
+  animation-delay: 0.5s;
+}
+
+.orbit-dot:nth-child(3) {
+  background: var(--accent-teal);
+  animation-delay: 1s;
+}
+
+.orbit-dot:nth-child(4) {
+  background: var(--warm-orange);
+  animation-delay: 1.5s;
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(60px) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: rotate(360deg) translateX(60px) rotate(-360deg);
+    opacity: 1;
+  }
+}
+
+/* Percentage Display */
+.upload-percentage-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  z-index: 10;
+}
+
+/* Update the upload visual container */
+.upload-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .upload-steps {

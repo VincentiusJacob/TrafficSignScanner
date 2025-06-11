@@ -258,17 +258,35 @@ const LandingPage: React.FC = () => {
           {showUploadAnimation && (
             <div className="upload-animation-container">
               <div className="upload-visual">
-                <div className="upload-icon-container">
-                  <Upload className="upload-icon" />
-                </div>
-                <div className="upload-progress-track">
-                  <div
-                    className="upload-progress-bar"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-                <div className="upload-percentage">
-                  {Math.round(uploadProgress)}%
+                {/* Cool Circle Loading Animation */}
+                <div className="upload-circle-container">
+                  <div className="upload-circle-bg"></div>
+                  <div className="upload-circle-progress"></div>
+
+                  {/* Multiple rotating rings */}
+                  <div className="upload-circle-rings">
+                    <div className="circle-ring ring-outer"></div>
+                    <div className="circle-ring ring-middle"></div>
+                    <div className="circle-ring ring-inner"></div>
+                  </div>
+
+                  {/* Orbiting dots */}
+                  <div className="upload-orbit-dots">
+                    <div className="orbit-dot"></div>
+                    <div className="orbit-dot"></div>
+                    <div className="orbit-dot"></div>
+                    <div className="orbit-dot"></div>
+                  </div>
+
+                  {/* Center circle with icon */}
+                  <div className="upload-circle-inner">
+                    <Upload className="upload-circle-icon" />
+                  </div>
+
+                  {/* Percentage display */}
+                  <div className="upload-percentage-display">
+                    {Math.round(uploadProgress)}%
+                  </div>
                 </div>
               </div>
 
@@ -364,24 +382,6 @@ const LandingPage: React.FC = () => {
                 </p>
                 <div className="card-border-effect"></div>
               </div>
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="stats-section">
-            <div className="stat-item">
-              <div className="stat-number">99.9%</div>
-              <div className="stat-label">Accuracy</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-number">0.5s</div>
-              <div className="stat-label">Processing</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-number">50+</div>
-              <div className="stat-label">Sign Types</div>
             </div>
           </div>
         </div>
