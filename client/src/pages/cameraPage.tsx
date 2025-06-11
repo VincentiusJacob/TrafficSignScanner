@@ -112,6 +112,7 @@ const CameraPage: React.FC = () => {
       navigate("/result", {
         state: {
           prediction: response.data.prediction,
+          confidence: response.data.confidence,
           image: capturedImage,
         },
       });

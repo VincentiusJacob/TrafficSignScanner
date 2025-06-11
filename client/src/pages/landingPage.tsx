@@ -73,13 +73,11 @@ const LandingPage: React.FC = () => {
             throw new Error("Invalid response from prediction API");
           }
 
-          // Format result
-          const classId = Number.parseInt(response.data.prediction);
-
           console.log("✅ Prediction complete, navigating to results...");
           navigate("/result", {
             state: {
               prediction: response.data.prediction,
+              confidence: response.data.confidence,
               image: base64Image,
             },
           });
