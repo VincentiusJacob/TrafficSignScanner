@@ -319,25 +319,6 @@ const ResultPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Section */}
-        <div className="stats-section">
-          <div className="stat-card">
-            <Eye className="stat-icon blue" />
-            <div className="stat-value">99.2%</div>
-            <div className="stat-label">Accuracy Rate</div>
-          </div>
-          <div className="stat-card">
-            <Zap className="stat-icon yellow" />
-            <div className="stat-value">{"<1s"}</div>
-            <div className="stat-label">Processing Time</div>
-          </div>
-          <div className="stat-card">
-            <Target className="stat-icon green" />
-            <div className="stat-value">50+</div>
-            <div className="stat-label">Sign Types</div>
-          </div>
-        </div>
-
         {/* Debug Info (only in development) */}
         {process.env.NODE_ENV === "development" && (
           <div className="debug-section">

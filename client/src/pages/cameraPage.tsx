@@ -3,8 +3,19 @@
 import type React from "react";
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, RotateCcw, X, Zap } from "lucide-react";
+import {
+  Camera,
+  RotateCcw,
+  X,
+  Zap,
+  Focus,
+  Sparkles,
+  Target,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { predictTrafficSign } from "../utils/modelUtils";
+import "./cameraPage.css";
 
 const CameraPage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,12 +25,19 @@ const CameraPage: React.FC = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment"
+  );
 
   const startCamera = useCallback(async () => {
     try {
       setError(null);
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }, // Use back camera on mobile
+        video: {
+          facingMode: facingMode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       });
 
       if (videoRef.current) {
@@ -32,7 +50,7 @@ const CameraPage: React.FC = () => {
         "Unable to access camera. Please check permissions and try again."
       );
     }
-  }, []);
+  }, [facingMode]);
 
   const stopCamera = useCallback(() => {
     if (videoRef.current?.srcObject) {
@@ -42,6 +60,14 @@ const CameraPage: React.FC = () => {
       setIsStreaming(false);
     }
   }, []);
+
+  const toggleCamera = useCallback(() => {
+    stopCamera();
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+    setTimeout(() => {
+      startCamera();
+    }, 100);
+  }, [stopCamera, startCamera]);
 
   const capturePhoto = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -116,96 +142,182 @@ const CameraPage: React.FC = () => {
   }, [navigate, stopCamera]);
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-800">
-        <button
-          onClick={goBack}
-          className="text-white hover:text-gray-300 transition-colors"
-        >
-          <X size={24} />
-        </button>
-        <h1 className="text-white text-lg font-semibold">Camera</h1>
-        <div className="w-6" /> {/* Spacer */}
+    <div className="camera-page">
+      {/* Animated Background */}
+      <div className="background-elements">
+        <div className="floating-blob blob-1"></div>
+        <div className="floating-blob blob-2"></div>
+        <div className="floating-blob blob-3"></div>
       </div>
 
-      {/* Camera View */}
-      <div className="flex-1 relative">
+      {/* Header */}
+      <div className="camera-header">
+        <button onClick={goBack} className="back-button">
+          <X className="button-icon" />
+          <span>Back</span>
+        </button>
+        <div className="header-title">
+          <div className="title-icon">
+            <Camera className="icon" />
+          </div>
+          <h1>AI Traffic Scanner</h1>
+        </div>
+        <div className="header-spacer"></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="camera-content">
         {!capturedImage ? (
-          <>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-              style={{ transform: "scaleX(-1)" }} // Mirror effect
-            />
-            <canvas ref={canvasRef} className="hidden" />
+          <div className="camera-view">
+            {/* Instructions */}
+            {!isStreaming && (
+              <div className="instructions-card">
+                <div className="instruction-icon">
+                  <Focus className="icon" />
+                </div>
+                <h2>Ready to Scan</h2>
+                <p>
+                  Point your camera at a traffic sign and capture it for AI
+                  analysis
+                </p>
+                <div className="tips-list">
+                  <div className="tip-item">
+                    <CheckCircle className="tip-icon" />
+                    <span>Ensure good lighting</span>
+                  </div>
+                  <div className="tip-item">
+                    <CheckCircle className="tip-icon" />
+                    <span>Keep sign centered</span>
+                  </div>
+                  <div className="tip-item">
+                    <CheckCircle className="tip-icon" />
+                    <span>Hold camera steady</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Camera Container */}
+            <div className="camera-container">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="camera-video"
+              />
+              <canvas ref={canvasRef} className="hidden-canvas" />
+
+              {/* Camera Overlay */}
+              {isStreaming && (
+                <div className="camera-overlay">
+                  {/* Scan Frame */}
+                  <div className="scan-frame">
+                    <div className="corner corner-tl"></div>
+                    <div className="corner corner-tr"></div>
+                    <div className="corner corner-bl"></div>
+                    <div className="corner corner-br"></div>
+                    <div className="scan-line"></div>
+                  </div>
+
+                  {/* Camera Toggle */}
+                  <button onClick={toggleCamera} className="camera-toggle">
+                    <RotateCcw className="toggle-icon" />
+                  </button>
+
+                  {/* Scan Instructions */}
+                  <div className="scan-instructions">
+                    <Target className="scan-icon" />
+                    <span>Align traffic sign within frame</span>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Camera Controls */}
-            <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-8">
+            <div className="camera-controls">
               {!isStreaming ? (
-                <button
-                  onClick={startCamera}
-                  className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full transition-colors"
-                >
-                  <Camera size={32} />
+                <button onClick={startCamera} className="start-camera-btn">
+                  <Camera className="button-icon" />
+                  <span>Start Camera</span>
+                  <Sparkles className="accent-icon" />
                 </button>
               ) : (
-                <button
-                  onClick={capturePhoto}
-                  className="bg-white hover:bg-gray-100 text-gray-900 p-6 rounded-full transition-colors shadow-lg"
-                >
-                  <div className="w-8 h-8 bg-gray-900 rounded-full" />
+                <button onClick={capturePhoto} className="capture-btn">
+                  <div className="capture-inner">
+                    <div className="capture-ring"></div>
+                  </div>
                 </button>
               )}
             </div>
-          </>
+          </div>
         ) : (
-          <>
-            <img
-              src={capturedImage || "/placeholder.svg"}
-              alt="Captured"
-              className="w-full h-full object-cover"
-            />
+          <div className="preview-view">
+            {/* Captured Image */}
+            <div className="image-preview">
+              <img
+                src={capturedImage || "/placeholder.svg"}
+                alt="Captured"
+                className="preview-image"
+              />
+              <div className="preview-overlay">
+                <div className="preview-badge">
+                  <CheckCircle className="badge-icon" />
+                  <span>Image Captured</span>
+                </div>
+              </div>
+            </div>
 
-            {/* Photo Controls */}
-            <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4">
+            {/* Preview Controls */}
+            <div className="preview-controls">
               <button
                 onClick={retakePhoto}
                 disabled={isProcessing}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-full flex items-center gap-2 transition-colors disabled:opacity-50"
+                className="retake-btn"
               >
-                <RotateCcw size={20} />
+                <RotateCcw className="button-icon" />
                 <span>Retake</span>
               </button>
 
               <button
                 onClick={analyzePhoto}
                 disabled={isProcessing}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full flex items-center gap-2 transition-colors disabled:opacity-50"
+                className="analyze-btn"
               >
-                <Zap size={20} />
+                <Zap className="button-icon" />
                 <span>{isProcessing ? "Analyzing..." : "Analyze"}</span>
+                {!isProcessing && <Sparkles className="accent-icon" />}
               </button>
             </div>
-          </>
+          </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="absolute top-4 left-4 right-4 bg-red-600 text-white p-3 rounded-lg">
-            <p className="text-sm">{error}</p>
+          <div className="error-message">
+            <AlertTriangle className="error-icon" />
+            <p>{error}</p>
+            <button onClick={() => setError(null)} className="dismiss-btn">
+              <X className="dismiss-icon" />
+            </button>
           </div>
         )}
 
         {/* Processing Overlay */}
         {isProcessing && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="text-gray-700">Analyzing image with AI...</p>
+          <div className="processing-overlay">
+            <div className="processing-card">
+              <div className="processing-animation">
+                <div className="processing-ring"></div>
+                <div className="processing-inner">
+                  <Zap className="processing-icon" />
+                </div>
+              </div>
+              <h3>AI Analysis in Progress</h3>
+              <p>Identifying traffic sign with advanced neural networks...</p>
+              <div className="progress-bar">
+                <div className="progress-fill"></div>
+              </div>
             </div>
           </div>
         )}
