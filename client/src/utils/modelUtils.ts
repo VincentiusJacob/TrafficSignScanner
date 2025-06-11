@@ -64,11 +64,98 @@ export async function loadModel(): Promise<tf.LayersModel> {
 
   try {
     console.log("🤖 Loading TensorFlow.js model...");
-    model = await tf.loadLayersModel("/model/model.json");
-    console.log("✅ Model loaded successfully!");
-    console.log("📊 Model input shape:", model.inputs[0].shape);
-    console.log("📊 Model output shape:", model.outputs[0].shape);
-    return model;
+
+    // Try to load the model directly first
+    try {
+      model = await tf.loadLayersModel("/model/model.json");
+      console.log("✅ Model loaded successfully!");
+      console.log("📊 Model input shape:", model.inputs[0].shape);
+      console.log("📊 Model output shape:", model.outputs[0].shape);
+      return model;
+    } catch (initialError) {
+      console.warn(
+        "⚠️ Initial model loading failed, trying alternative approach:",
+        initialError
+      );
+
+      // If direct loading fails, try to load and fix the model
+      const modelJSON = await fetch("/model/model.json").then((response) =>
+        response.json()
+      );
+
+      // Check if the model has proper input shape defined
+      if (
+        !modelJSON.userDefinedMetadata ||
+        !modelJSON.userDefinedMetadata.inputShape
+      ) {
+        console.log("⚠️ Model missing input shape, adding it manually");
+
+        // Add input shape to the model JSON
+        if (!modelJSON.userDefinedMetadata) {
+          modelJSON.userDefinedMetadata = {};
+        }
+
+        modelJSON.userDefinedMetadata.inputShape = [64, 64, 1];
+
+        // Fix the first layer if needed
+        if (
+          modelJSON.modelTopology &&
+          modelJSON.modelTopology.model_config &&
+          modelJSON.modelTopology.model_config.config &&
+          modelJSON.modelTopology.model_config.config.layers &&
+          modelJSON.modelTopology.model_config.config.layers.length > 0
+        ) {
+          const firstLayer =
+            modelJSON.modelTopology.model_config.config.layers[0];
+          if (
+            firstLayer.class_name === "InputLayer" &&
+            (!firstLayer.config.batch_input_shape ||
+              firstLayer.config.batch_input_shape.length === 0)
+          ) {
+            console.log("⚠️ Fixing input layer batch_input_shape");
+            firstLayer.config.batch_input_shape = [null, 64, 64, 1];
+          }
+        }
+
+        // Load weight data from both shards
+        const weightData1 = await fetch("/model/group1-shard1of2.bin").then(
+          (response) => response.arrayBuffer()
+        );
+        const weightData2 = await fetch("/model/group1-shard2of2.bin").then(
+          (response) => response.arrayBuffer()
+        );
+
+        // Combine weight data
+        const combinedWeightData = new Uint8Array(
+          weightData1.byteLength + weightData2.byteLength
+        );
+        combinedWeightData.set(new Uint8Array(weightData1), 0);
+        combinedWeightData.set(
+          new Uint8Array(weightData2),
+          weightData1.byteLength
+        );
+
+        // Load the fixed model
+        const modelArtifacts = {
+          modelTopology: modelJSON.modelTopology,
+          weightSpecs: modelJSON.weightSpecs,
+          weightData: combinedWeightData.buffer,
+          userDefinedMetadata: modelJSON.userDefinedMetadata,
+        };
+
+        const loadedModel = await tf.loadLayersModel(
+          tf.io.fromMemory(modelArtifacts)
+        );
+        model = loadedModel;
+
+        console.log("✅ Model loaded successfully with fixes!");
+        console.log("📊 Model input shape:", model.inputs[0].shape);
+        console.log("📊 Model output shape:", model.outputs[0].shape);
+        return model;
+      } else {
+        throw initialError;
+      }
+    }
   } catch (error) {
     console.error("❌ Error loading model:", error);
     throw new Error(
@@ -81,16 +168,30 @@ export function preprocessImage(imageElement: HTMLImageElement): tf.Tensor {
   console.log("🖼️ Preprocessing image...");
 
   // Convert image to tensor and preprocess
-  const tensor = tf.browser
-    .fromPixels(imageElement)
-    .resizeNearestNeighbor([64, 64]) // Resize to 64x64
-    .mean(2) // Convert to grayscale by averaging RGB channels
-    .expandDims(2) // Add channel dimension
-    .expandDims(0) // Add batch dimension
-    .toFloat()
-    .div(255.0); // Normalize to 0-1
+  const tensor = tf.tidy(() => {
+    // Read the image
+    const imageTensor = tf.browser.fromPixels(imageElement);
+    console.log("📊 Original image tensor shape:", imageTensor.shape);
 
-  console.log("📊 Preprocessed tensor shape:", tensor.shape);
+    // Resize to 64x64
+    const resized = tf.image.resizeBilinear(imageTensor, [64, 64]);
+    console.log("📊 Resized tensor shape:", resized.shape);
+
+    // Convert to grayscale by averaging RGB channels
+    const grayscale = resized.mean(2, true);
+    console.log("📊 Grayscale tensor shape:", grayscale.shape);
+
+    // Normalize to 0-1
+    const normalized = grayscale.div(255.0);
+    console.log("📊 Normalized tensor shape:", normalized.shape);
+
+    // Add batch dimension
+    const batched = normalized.expandDims(0);
+    console.log("📊 Final tensor shape:", batched.shape);
+
+    return batched;
+  });
+
   return tensor;
 }
 
@@ -105,11 +206,11 @@ export async function predictTrafficSign(
   try {
     console.log("🔮 Starting prediction...");
 
-    const model = await loadModel();
+    const loadedModel = await loadModel();
     const preprocessedImage = preprocessImage(imageElement);
 
     console.log("🤖 Running model prediction...");
-    const prediction = model.predict(preprocessedImage) as tf.Tensor;
+    const prediction = loadedModel.predict(preprocessedImage) as tf.Tensor;
     const predictionData = await prediction.data();
 
     // Get the predicted class
@@ -139,8 +240,7 @@ export async function predictTrafficSign(
     });
 
     // Clean up tensors
-    preprocessedImage.dispose();
-    prediction.dispose();
+    tf.dispose([preprocessedImage, prediction]);
 
     return {
       classId,
