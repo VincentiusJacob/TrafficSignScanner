@@ -1,5 +1,5 @@
 {
-  "watch": ["index.js", "predict.py"],
+  "watch": ["/api/index.js", "predict.py"],
   "ignore": ["venv/", "uploads/", "model/", "node_modules/"],
   "ext": "js,json,py"
 }

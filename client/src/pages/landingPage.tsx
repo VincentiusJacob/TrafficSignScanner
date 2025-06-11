@@ -18,6 +18,8 @@ const LandingPage: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    console.log("File selected:", file.name, file.type, file.size);
+
     setIsUploading(true);
     const formData = new FormData();
     formData.append("image", file);
@@ -25,8 +27,27 @@ const LandingPage: React.FC = () => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Image = reader.result as string;
+      console.log("Base64 image created, length:", base64Image.length);
 
       try {
+        console.log("Sending request to backend...");
+        console.log(
+          "Backend URL: https://traffic-sign-scanner-server.vercel.app/api/predict"
+        );
+
+        // Test connection first
+        const testResponse = await fetch(
+          "https://traffic-sign-scanner-server.vercel.app/api/predict",
+          {
+            method: "OPTIONS",
+          }
+        ).catch((err) => {
+          console.error("Connection test failed:", err);
+          throw new Error(
+            "Cannot connect to backend server. Make sure it's running on port 5000."
+          );
+        });
+
         const response = await axios.post(
           "https://traffic-sign-scanner-server.vercel.app/api/predict",
           formData,
@@ -34,21 +55,81 @@ const LandingPage: React.FC = () => {
             headers: {
               "Content-Type": "multipart/form-data",
             },
+            timeout: 30000, // 30 second timeout
           }
         );
 
-        navigate("/result", {
-          state: {
-            prediction: response.data.prediction,
-            image: base64Image,
-          },
-        });
-      } catch (error) {
-        console.error("Upload prediction failed:", error);
-        alert("Failed to get prediction.");
+        console.log("Response received:", response.data);
+        console.log("Response status:", response.status);
+
+        if (response.data && response.data.prediction) {
+          navigate("/result", {
+            state: {
+              prediction: response.data.prediction,
+              image: base64Image,
+            },
+          });
+        } else {
+          throw new Error("Invalid response format from server");
+        }
+      } catch (error: any) {
+        console.error("=== DETAILED ERROR INFORMATION ===");
+        console.error("Full error object:", error);
+
+        let errorMessage = "Failed to get prediction.";
+
+        if (axios.isAxiosError(error)) {
+          console.error("This is an Axios error");
+
+          if (error.response) {
+            // Server responded with error status
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
+            errorMessage = `Server error (${error.response.status}): ${
+              error.response.data?.message || error.response.statusText
+            }`;
+          } else if (error.request) {
+            // Request was made but no response received
+            console.error(
+              "No response received. Request details:",
+              error.request
+            );
+            console.error("Network Error - Check if backend is running");
+            errorMessage =
+              "Network error: Cannot connect to server. Please check if the backend is running on port 5000.";
+          } else {
+            // Something else happened
+            console.error("Request setup error:", error.message);
+            errorMessage = `Request error: ${error.message}`;
+          }
+
+          if (error.code) {
+            console.error("Error code:", error.code);
+            if (error.code === "ECONNREFUSED") {
+              errorMessage =
+                "Connection refused: Backend server is not running on port 5000.";
+            } else if (error.code === "TIMEOUT") {
+              errorMessage =
+                "Request timeout: Server took too long to respond.";
+            }
+          }
+        } else {
+          console.error("Non-Axios error:", error.message);
+          errorMessage = error.message || errorMessage;
+        }
+
+        console.error("=== END ERROR DETAILS ===");
+        alert(errorMessage);
       } finally {
         setIsUploading(false);
       }
+    };
+
+    reader.onerror = () => {
+      console.error("FileReader error");
+      alert("Failed to read the selected file.");
+      setIsUploading(false);
     };
 
     reader.readAsDataURL(file);
