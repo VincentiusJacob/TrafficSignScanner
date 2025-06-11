@@ -257,71 +257,12 @@ const LandingPage: React.FC = () => {
           {/* Upload Animation */}
           {showUploadAnimation && (
             <div className="upload-animation-container">
-              <div className="upload-visual">
-                {/* Cool Circle Loading Animation */}
-                <div className="upload-circle-container">
-                  <div className="upload-circle-bg"></div>
-                  <div className="upload-circle-progress"></div>
-
-                  {/* Multiple rotating rings */}
-                  <div className="upload-circle-rings">
-                    <div className="circle-ring ring-outer"></div>
-                    <div className="circle-ring ring-middle"></div>
-                    <div className="circle-ring ring-inner"></div>
-                  </div>
-
-                  {/* Orbiting dots */}
-                  <div className="upload-orbit-dots">
-                    <div className="orbit-dot"></div>
-                    <div className="orbit-dot"></div>
-                    <div className="orbit-dot"></div>
-                    <div className="orbit-dot"></div>
-                  </div>
-
-                  {/* Center circle with icon */}
-                  <div className="upload-circle-inner">
-                    <Upload className="upload-circle-icon" />
-                  </div>
-
-                  {/* Percentage display */}
-                  <div className="upload-percentage-display">
-                    {Math.round(uploadProgress)}%
-                  </div>
-                </div>
-              </div>
-
-              <div className="upload-steps">
-                <div
-                  className={`upload-step ${
-                    uploadProgress > 0 ? "active" : ""
-                  }`}
-                >
-                  <div className="step-indicator">1</div>
-                  <div className="step-label">Reading file</div>
-                </div>
-                <div
-                  className={`upload-step ${
-                    uploadProgress > 30 ? "active" : ""
-                  }`}
-                >
-                  <div className="step-indicator">2</div>
-                  <div className="step-label">Preparing image</div>
-                </div>
-                <div
-                  className={`upload-step ${
-                    uploadProgress > 60 ? "active" : ""
-                  }`}
-                >
-                  <div className="step-indicator">3</div>
-                  <div className="step-label">Uploading</div>
-                </div>
-                <div
-                  className={`upload-step ${
-                    uploadProgress === 100 ? "active" : ""
-                  }`}
-                >
-                  <div className="step-indicator">4</div>
-                  <div className="step-label">Processing</div>
+              {/* Simple Circle Loading */}
+              <div className="simple-circle-loader">
+                <div className="circle-background"></div>
+                <div className="circle-progress"></div>
+                <div className="circle-percentage">
+                  {Math.round(uploadProgress)}%
                 </div>
               </div>
 
@@ -331,12 +272,6 @@ const LandingPage: React.FC = () => {
                 ) : (
                   <p>Preparing for AI analysis...</p>
                 )}
-              </div>
-
-              <div className="upload-particles">
-                {[...Array(10)].map((_, i) => (
-                  <div key={i} className="upload-particle"></div>
-                ))}
               </div>
             </div>
           )}
