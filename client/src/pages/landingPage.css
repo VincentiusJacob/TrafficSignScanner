@@ -759,6 +759,309 @@ body {
   display: none; /* Remove busy border effects */
 }
 
+/* Upload Animation */
+.upload-animation-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  position: relative;
+  padding: 2rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  animation: fade-in 0.5s ease-out;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.upload-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.upload-icon-container {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-blue),
+    var(--secondary-purple)
+  );
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: float-gentle 3s ease-in-out infinite;
+}
+
+@keyframes float-gentle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.upload-icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--text-primary);
+}
+
+.upload-progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--primary-blue),
+    var(--secondary-purple)
+  );
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-progress-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.upload-percentage {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 0.5rem;
+}
+
+.upload-steps {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 1rem;
+  position: relative;
+}
+
+.upload-steps::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: var(--glass-border);
+  z-index: 0;
+}
+
+.upload-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+  opacity: 0.6;
+}
+
+.upload-step.active {
+  opacity: 1;
+}
+
+.step-indicator {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.upload-step.active .step-indicator {
+  background: linear-gradient(
+    135deg,
+    var(--primary-blue),
+    var(--secondary-purple)
+  );
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 15px var(--soft-glow);
+  transform: scale(1.1);
+}
+
+.step-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  text-align: center;
+  max-width: 80px;
+}
+
+.upload-step.active .step-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.upload-message {
+  margin-top: 1rem;
+  color: var(--text-accent);
+  font-weight: 500;
+  text-align: center;
+}
+
+.upload-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.upload-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  opacity: 0.6;
+  animation: particle-rise 3s linear infinite;
+}
+
+@keyframes particle-rise {
+  0% {
+    transform: translate(var(--x, 0), 100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(var(--x, 0), -20px);
+    opacity: 0;
+  }
+}
+
+/* Position particles randomly */
+.upload-particle:nth-child(1) {
+  --x: 10%;
+  animation-delay: 0s;
+}
+.upload-particle:nth-child(2) {
+  --x: 20%;
+  animation-delay: 0.5s;
+}
+.upload-particle:nth-child(3) {
+  --x: 30%;
+  animation-delay: 1s;
+}
+.upload-particle:nth-child(4) {
+  --x: 40%;
+  animation-delay: 1.5s;
+}
+.upload-particle:nth-child(5) {
+  --x: 50%;
+  animation-delay: 2s;
+}
+.upload-particle:nth-child(6) {
+  --x: 60%;
+  animation-delay: 2.5s;
+}
+.upload-particle:nth-child(7) {
+  --x: 70%;
+  animation-delay: 3s;
+}
+.upload-particle:nth-child(8) {
+  --x: 80%;
+  animation-delay: 3.5s;
+}
+.upload-particle:nth-child(9) {
+  --x: 90%;
+  animation-delay: 4s;
+}
+.upload-particle:nth-child(10) {
+  --x: 95%;
+  animation-delay: 4.5s;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .upload-steps {
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .upload-steps::before {
+    display: none;
+  }
+
+  .upload-step {
+    width: 45%;
+  }
+}
+
+@media (max-width: 400px) {
+  .upload-step {
+    width: 100%;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .hero-title {

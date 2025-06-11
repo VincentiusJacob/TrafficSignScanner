@@ -23,6 +23,11 @@ const LandingPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Tambahkan state untuk menampilkan upload animation
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUploadAnimation, setShowUploadAnimation] = useState(false);
+
+  // Modifikasi handleUpload function untuk menambahkan animasi upload
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -30,6 +35,8 @@ const LandingPage: React.FC = () => {
     console.log("File selected:", file.name, file.type, file.size);
     setError(null);
     setIsProcessing(true);
+    setShowUploadAnimation(true);
+    setUploadProgress(0);
 
     try {
       // Validate file type
@@ -44,43 +51,59 @@ const LandingPage: React.FC = () => {
         );
       }
 
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          const newProgress = prev + Math.random() * 15;
+          return newProgress > 90 ? 90 : newProgress;
+        });
+      }, 300);
+
       // Create base64 image for display
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Image = reader.result as string;
+        clearInterval(progressInterval);
+        setUploadProgress(100);
 
-        try {
-          console.log("🔄 Starting dynamic prediction analysis...");
+        // Add a small delay to show 100% before processing
+        setTimeout(async () => {
+          try {
+            console.log("🔄 Starting dynamic prediction analysis...");
 
-          // Use dynamic prediction
-          const result = await predictTrafficSign(file);
+            // Use dynamic prediction
+            const result = await predictTrafficSign(file);
 
-          console.log(
-            "✅ Dynamic prediction complete, navigating to results..."
-          );
-          navigate("/result", {
-            state: {
-              prediction: result.classId.toString(),
-              confidence: result.confidence,
-              image: base64Image,
-              className: result.className,
-            },
-          });
-        } catch (error: any) {
-          console.error("=== PREDICTION ERROR ===");
-          console.error("Error:", error);
+            console.log(
+              "✅ Dynamic prediction complete, navigating to results..."
+            );
+            navigate("/result", {
+              state: {
+                prediction: result.classId.toString(),
+                confidence: result.confidence,
+                image: base64Image,
+                className: result.className,
+              },
+            });
+          } catch (error: any) {
+            console.error("=== PREDICTION ERROR ===");
+            console.error("Error:", error);
 
-          setError(
-            error.message || "Failed to analyze the image. Please try again."
-          );
-        } finally {
-          setIsProcessing(false);
-        }
+            setError(
+              error.message || "Failed to analyze the image. Please try again."
+            );
+          } finally {
+            setIsProcessing(false);
+            setShowUploadAnimation(false);
+          }
+        }, 500);
       };
 
       reader.onerror = () => {
+        clearInterval(progressInterval);
         setError("Failed to read the selected file.");
         setIsProcessing(false);
+        setShowUploadAnimation(false);
       };
 
       reader.readAsDataURL(file);
@@ -90,6 +113,7 @@ const LandingPage: React.FC = () => {
 
       setError(error.message || "Failed to process the image.");
       setIsProcessing(false);
+      setShowUploadAnimation(false);
     }
   };
 
@@ -212,7 +236,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Processing Status */}
-          {isProcessing && (
+          {isProcessing && !showUploadAnimation && (
             <div className="processing-container">
               <div className="processing-orb">
                 <div className="orb-ring ring-1"></div>
@@ -227,6 +251,75 @@ const LandingPage: React.FC = () => {
                   AI NEURAL NETWORKS ANALYZING...
                 </span>
               </p>
+            </div>
+          )}
+
+          {/* Upload Animation */}
+          {showUploadAnimation && (
+            <div className="upload-animation-container">
+              <div className="upload-visual">
+                <div className="upload-icon-container">
+                  <Upload className="upload-icon" />
+                </div>
+                <div className="upload-progress-track">
+                  <div
+                    className="upload-progress-bar"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <div className="upload-percentage">
+                  {Math.round(uploadProgress)}%
+                </div>
+              </div>
+
+              <div className="upload-steps">
+                <div
+                  className={`upload-step ${
+                    uploadProgress > 0 ? "active" : ""
+                  }`}
+                >
+                  <div className="step-indicator">1</div>
+                  <div className="step-label">Reading file</div>
+                </div>
+                <div
+                  className={`upload-step ${
+                    uploadProgress > 30 ? "active" : ""
+                  }`}
+                >
+                  <div className="step-indicator">2</div>
+                  <div className="step-label">Preparing image</div>
+                </div>
+                <div
+                  className={`upload-step ${
+                    uploadProgress > 60 ? "active" : ""
+                  }`}
+                >
+                  <div className="step-indicator">3</div>
+                  <div className="step-label">Uploading</div>
+                </div>
+                <div
+                  className={`upload-step ${
+                    uploadProgress === 100 ? "active" : ""
+                  }`}
+                >
+                  <div className="step-indicator">4</div>
+                  <div className="step-label">Processing</div>
+                </div>
+              </div>
+
+              <div className="upload-message">
+                {uploadProgress < 100 ? (
+                  <p>Uploading your traffic sign image...</p>
+                ) : (
+                  <p>Preparing for AI analysis...</p>
+                )}
+              </div>
+
+              <div className="upload-particles">
+                {[...Array(10)].map((_, i) => (
+                  <div key={i} className="upload-particle"></div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -271,6 +364,24 @@ const LandingPage: React.FC = () => {
                 </p>
                 <div className="card-border-effect"></div>
               </div>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="stats-section">
+            <div className="stat-item">
+              <div className="stat-number">99.9%</div>
+              <div className="stat-label">Accuracy</div>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <div className="stat-number">0.5s</div>
+              <div className="stat-label">Processing</div>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <div className="stat-number">50+</div>
+              <div className="stat-label">Sign Types</div>
             </div>
           </div>
         </div>
