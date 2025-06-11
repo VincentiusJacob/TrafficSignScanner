@@ -146,7 +146,6 @@ const LandingPage: React.FC = () => {
             <span className="title-line-2">
               <span className="cyber-text">RECOGNITION</span>
             </span>
-            <span className="title-line-3">REDEFINED</span>
           </h1>
 
           {/* Subtitle with Glow */}
