@@ -107,7 +107,7 @@ const LandingPage: React.FC = () => {
 
         {/* Floating Particles */}
         <div className="particles">
-          {[...Array(50)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <div key={i} className={`particle particle-${(i % 3) + 1}`}></div>
           ))}
         </div>
@@ -271,6 +271,24 @@ const LandingPage: React.FC = () => {
                 </p>
                 <div className="card-border-effect"></div>
               </div>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="stats-section">
+            <div className="stat-item">
+              <div className="stat-number">99.9%</div>
+              <div className="stat-label">Accuracy</div>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <div className="stat-number">0.5s</div>
+              <div className="stat-label">Processing</div>
+            </div>
+            <div className="stat-divider"></div>
+            <div className="stat-item">
+              <div className="stat-number">50+</div>
+              <div className="stat-label">Sign Types</div>
             </div>
           </div>
         </div>
