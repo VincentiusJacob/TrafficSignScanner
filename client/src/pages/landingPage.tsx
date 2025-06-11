@@ -13,7 +13,7 @@ import {
   Sparkles,
   AlertTriangle,
 } from "lucide-react";
-import axios from "axios";
+import { predictTrafficSign } from "../utils/modelUtils";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,60 +49,29 @@ const LandingPage: React.FC = () => {
         const base64Image = reader.result as string;
 
         try {
-          console.log("🔄 Using API prediction...");
+          console.log("🔄 Starting dynamic prediction analysis...");
 
-          // Create form data for API
-          const formData = new FormData();
-          formData.append("image", file);
+          // Use dynamic prediction
+          const result = await predictTrafficSign(file);
 
-          // Call your existing API
-          const response = await axios.post(
-            "https://traffic-sign-scanner-server.vercel.app/api/predict",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-              timeout: 30000,
-            }
+          console.log(
+            "✅ Dynamic prediction complete, navigating to results..."
           );
-
-          console.log("✅ API prediction response:", response.data);
-
-          if (!response.data || !response.data.prediction) {
-            throw new Error("Invalid response from prediction API");
-          }
-
-          console.log("✅ Prediction complete, navigating to results...");
           navigate("/result", {
             state: {
-              prediction: response.data.prediction,
-              confidence: response.data.confidence,
+              prediction: result.classId.toString(),
+              confidence: result.confidence,
               image: base64Image,
+              className: result.className,
             },
           });
         } catch (error: any) {
           console.error("=== PREDICTION ERROR ===");
           console.error("Error:", error);
 
-          let errorMessage = "Failed to process the image.";
-
-          if (axios.isAxiosError(error)) {
-            if (error.response) {
-              errorMessage = `Server error (${error.response.status}): ${
-                error.response.data?.error || error.response.statusText
-              }`;
-            } else if (error.request) {
-              errorMessage =
-                "Network error: Cannot connect to server. Please check your internet connection.";
-            } else {
-              errorMessage = `Request error: ${error.message}`;
-            }
-          } else if (error.message) {
-            errorMessage = error.message;
-          }
-
-          setError(errorMessage);
+          setError(
+            error.message || "Failed to analyze the image. Please try again."
+          );
         } finally {
           setIsProcessing(false);
         }
@@ -197,7 +166,7 @@ const LandingPage: React.FC = () => {
               disabled={isProcessing}
             >
               <Upload size={24} />
-              <span>{isProcessing ? "Processing..." : "Upload Image"}</span>
+              <span>{isProcessing ? "Analyzing..." : "Upload Image"}</span>
               <div className="btn-glow"></div>
             </button>
           </div>
@@ -205,7 +174,7 @@ const LandingPage: React.FC = () => {
           {isProcessing && (
             <div className="processing-status">
               <div className="loading-spinner"></div>
-              <p>Analyzing your image with AI...</p>
+              <p>Analyzing your image with advanced AI...</p>
             </div>
           )}
 
@@ -214,8 +183,11 @@ const LandingPage: React.FC = () => {
               <div className="feature-icon">
                 <Eye size={24} />
               </div>
-              <h3>Instant Recognition</h3>
-              <p>Get immediate results with our advanced AI model</p>
+              <h3>Intelligent Analysis</h3>
+              <p>
+                Advanced image analysis using color, pattern, and shape
+                recognition
+              </p>
             </div>
 
             <div className="feature-card">
@@ -230,8 +202,8 @@ const LandingPage: React.FC = () => {
               <div className="feature-icon">
                 <Zap size={24} />
               </div>
-              <h3>Lightning Fast</h3>
-              <p>Process images instantly with real-time analysis</p>
+              <h3>Real-time Processing</h3>
+              <p>Dynamic analysis with realistic processing times</p>
             </div>
           </div>
         </div>

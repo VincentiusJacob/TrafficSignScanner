@@ -4,8 +4,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Share2, RefreshCw, AlertTriangle, Info, Camera } from "lucide-react";
-import { labelMap } from "../utils/modelUtils";
-import axios from "axios";
+import { labelMap, getSignDescription } from "../utils/modelUtils";
 
 const ResultPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,14 +41,9 @@ const ResultPage: React.FC = () => {
     const fetchDescription = async () => {
       setIsLoading(true);
       try {
-        // Call your existing backend API
-        const response = await axios.post(
-          "https://traffic-sign-scanner-server.vercel.app/api/get-sign-description",
-          {
-            signName: signName,
-          }
-        );
-        setDescription(response.data.description);
+        // Use dynamic description generation
+        const dynamicDescription = await getSignDescription(signName);
+        setDescription(dynamicDescription);
       } catch (error) {
         console.error("Error fetching description:", error);
         setDescription("Unable to fetch description at this time.");
@@ -138,14 +132,14 @@ const ResultPage: React.FC = () => {
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <Camera className="w-5 h-5" />
-                Uploaded Image
+                Analyzed Image
               </h2>
             </div>
             <div className="p-6">
               <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   src={state.image || "/placeholder.svg"}
-                  alt="Uploaded Traffic Sign"
+                  alt="Analyzed Traffic Sign"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-4 right-4">
@@ -199,8 +193,9 @@ const ResultPage: React.FC = () => {
                         Sign Not Recognized
                       </h4>
                       <p className="text-sm text-yellow-700 mt-1">
-                        The AI couldn't identify this traffic sign. Try
-                        uploading a clearer image or a different angle.
+                        The AI couldn't identify this traffic sign with high
+                        confidence. Try uploading a clearer image or a different
+                        angle.
                       </p>
                     </div>
                   </div>

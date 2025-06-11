@@ -4,7 +4,7 @@ import type React from "react";
 import { useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, RotateCcw, X, Zap } from "lucide-react";
-import axios from "axios";
+import { predictTrafficSign } from "../utils/modelUtils";
 
 const CameraPage: React.FC = () => {
   const navigate = useNavigate();
@@ -86,58 +86,25 @@ const CameraPage: React.FC = () => {
         type: "image/jpeg",
       });
 
-      // Create form data for API
-      const formData = new FormData();
-      formData.append("image", file);
+      console.log("🤖 Running dynamic AI analysis on captured image...");
+      const result = await predictTrafficSign(file);
 
-      // Call your existing API
-      const response = await axios.post(
-        "https://traffic-sign-scanner-server.vercel.app/api/predict",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          timeout: 30000,
-        }
-      );
-
-      console.log("✅ API prediction response:", response.data);
-
-      if (!response.data || !response.data.prediction) {
-        throw new Error("Invalid response from prediction API");
-      }
-
-      console.log("✅ Prediction complete, navigating to results...");
+      console.log("✅ Analysis complete, navigating to results...");
       navigate("/result", {
         state: {
-          prediction: response.data.prediction,
-          confidence: response.data.confidence,
+          prediction: result.classId.toString(),
+          confidence: result.confidence,
           image: capturedImage,
+          className: result.className,
         },
       });
     } catch (error: any) {
       console.error("=== ANALYSIS ERROR ===");
       console.error("Error:", error);
 
-      let errorMessage = "Failed to analyze the image. Please try again.";
-
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          errorMessage = `Server error (${error.response.status}): ${
-            error.response.data?.error || error.response.statusText
-          }`;
-        } else if (error.request) {
-          errorMessage =
-            "Network error: Cannot connect to server. Please check your internet connection.";
-        } else {
-          errorMessage = `Request error: ${error.message}`;
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      setError(errorMessage);
+      setError(
+        error.message || "Failed to analyze the image. Please try again."
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -238,7 +205,7 @@ const CameraPage: React.FC = () => {
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="text-gray-700">Analyzing image...</p>
+              <p className="text-gray-700">Analyzing image with AI...</p>
             </div>
           </div>
         )}
