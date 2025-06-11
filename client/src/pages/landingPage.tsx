@@ -1,141 +1,94 @@
 "use client";
 
 import type React from "react";
-
 import "./landingPage.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useRef, useState } from "react";
-import { Camera, Upload, Zap, Shield, Eye, Sparkles } from "lucide-react";
+import {
+  Camera,
+  Upload,
+  Zap,
+  Shield,
+  Eye,
+  Sparkles,
+  AlertTriangle,
+} from "lucide-react";
+import { predictTrafficSign, createImageElement } from "../utils/modelUtils";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     console.log("File selected:", file.name, file.type, file.size);
+    setError(null);
+    setIsProcessing(true);
 
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Image = reader.result as string;
-      console.log("Base64 image created, length:", base64Image.length);
-
-      try {
-        console.log("Sending request to backend...");
-        console.log(
-          "Backend URL: https://traffic-sign-scanner-server.vercel.app/api/predict"
-        );
-
-        // Test connection first
-        const testResponse = await fetch(
-          "https://traffic-sign-scanner-server.vercel.app/api/predict",
-          {
-            method: "OPTIONS",
-          }
-        ).catch((err) => {
-          console.error("Connection test failed:", err);
-          throw new Error(
-            "Cannot connect to backend server. Make sure it's running on port 5000."
-          );
-        });
-
-        const response = await axios.post(
-          "https://traffic-sign-scanner-server.vercel.app/api/predict",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            timeout: 30000, // 30 second timeout
-          }
-        );
-
-        console.log("Response received:", response.data);
-        console.log("Response status:", response.status);
-
-        if (response.data && response.data.prediction) {
-          navigate("/result", {
-            state: {
-              prediction: response.data.prediction,
-              image: base64Image,
-            },
-          });
-        } else {
-          throw new Error("Invalid response format from server");
-        }
-      } catch (error: any) {
-        console.error("=== DETAILED ERROR INFORMATION ===");
-        console.error("Full error object:", error);
-
-        let errorMessage = "Failed to get prediction.";
-
-        if (axios.isAxiosError(error)) {
-          console.error("This is an Axios error");
-
-          if (error.response) {
-            // Server responded with error status
-            console.error("Response data:", error.response.data);
-            console.error("Response status:", error.response.status);
-            console.error("Response headers:", error.response.headers);
-            errorMessage = `Server error (${error.response.status}): ${
-              error.response.data?.message || error.response.statusText
-            }`;
-          } else if (error.request) {
-            // Request was made but no response received
-            console.error(
-              "No response received. Request details:",
-              error.request
-            );
-            console.error("Network Error - Check if backend is running");
-            errorMessage =
-              "Network error: Cannot connect to server. Please check if the backend is running on port 5000.";
-          } else {
-            // Something else happened
-            console.error("Request setup error:", error.message);
-            errorMessage = `Request error: ${error.message}`;
-          }
-
-          if (error.code) {
-            console.error("Error code:", error.code);
-            if (error.code === "ECONNREFUSED") {
-              errorMessage =
-                "Connection refused: Backend server is not running on port 5000.";
-            } else if (error.code === "TIMEOUT") {
-              errorMessage =
-                "Request timeout: Server took too long to respond.";
-            }
-          }
-        } else {
-          console.error("Non-Axios error:", error.message);
-          errorMessage = error.message || errorMessage;
-        }
-
-        console.error("=== END ERROR DETAILS ===");
-        alert(errorMessage);
-      } finally {
-        setIsUploading(false);
+    try {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Please select a valid image file.");
       }
-    };
 
-    reader.onerror = () => {
-      console.error("FileReader error");
-      alert("Failed to read the selected file.");
-      setIsUploading(false);
-    };
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error(
+          "Image file is too large. Please select an image smaller than 10MB."
+        );
+      }
 
-    reader.readAsDataURL(file);
+      console.log("🖼️ Creating image element...");
+      const imageElement = await createImageElement(file);
+
+      console.log("🤖 Running AI prediction...");
+      const result = await predictTrafficSign(imageElement);
+
+      // Create base64 image for display
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Image = reader.result as string;
+
+        console.log("✅ Prediction complete, navigating to results...");
+        navigate("/result", {
+          state: {
+            prediction: result.classId.toString(),
+            confidence: result.confidence,
+            image: base64Image,
+            className: result.className,
+          },
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error: any) {
+      console.error("=== PREDICTION ERROR ===");
+      console.error("Error:", error);
+
+      let errorMessage = "Failed to process the image.";
+
+      if (error.message.includes("Failed to load")) {
+        errorMessage =
+          "Failed to load the AI model. Please refresh the page and try again.";
+      } else if (error.message.includes("Failed to predict")) {
+        errorMessage =
+          "Failed to analyze the image. Please try with a different image.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const triggerUpload = () => {
+    if (isProcessing) return;
     fileInputRef.current?.click();
   };
 
@@ -173,10 +126,18 @@ const LandingPage: React.FC = () => {
             explanations.
           </p>
 
+          {error && (
+            <div className="error-message">
+              <AlertTriangle size={20} />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div className="action-buttons">
             <button
               className="primary-btn scan-btn"
               onClick={() => navigate("/camera")}
+              disabled={isProcessing}
             >
               <Camera size={24} />
               <span>Take a Picture</span>
@@ -189,20 +150,28 @@ const LandingPage: React.FC = () => {
               style={{ display: "none" }}
               ref={fileInputRef}
               onChange={handleUpload}
+              disabled={isProcessing}
             />
 
             <button
               className={`secondary-btn upload-btn ${
-                isUploading ? "loading" : ""
+                isProcessing ? "loading" : ""
               }`}
               onClick={triggerUpload}
-              disabled={isUploading}
+              disabled={isProcessing}
             >
               <Upload size={24} />
-              <span>{isUploading ? "Uploading..." : "Upload Image"}</span>
+              <span>{isProcessing ? "Processing..." : "Upload Image"}</span>
               <div className="btn-glow"></div>
             </button>
           </div>
+
+          {isProcessing && (
+            <div className="processing-status">
+              <div className="loading-spinner"></div>
+              <p>Analyzing your image with AI...</p>
+            </div>
+          )}
 
           <div className="features-grid">
             <div className="feature-card">
@@ -226,7 +195,7 @@ const LandingPage: React.FC = () => {
                 <Zap size={24} />
               </div>
               <h3>Lightning Fast</h3>
-              <p>Process images in seconds with real-time analysis</p>
+              <p>Process images instantly in your browser</p>
             </div>
           </div>
         </div>

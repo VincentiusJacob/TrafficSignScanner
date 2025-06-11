@@ -4,67 +4,18 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Share2, RefreshCw, AlertTriangle, Info, Camera } from "lucide-react";
+import { labelMap } from "../utils/modelUtils";
 import axios from "axios";
-
-const labelMap: Record<string, string> = {
-  0: "Bicycles crossing",
-  1: "Children crossing",
-  2: "Danger Ahead",
-  3: "Dangerous curve to the left",
-  4: "Dangerous curve to the right",
-  5: "Don't Go Left",
-  6: "Don't Go Left or Right",
-  7: "Don't Go Right",
-  8: "Don't Go straight",
-  9: "Don't Go straight or left",
-  10: "Don't overtake from Left",
-  11: "Fences",
-  12: "Go Left",
-  13: "Go Left or right",
-  14: "Go Right",
-  15: "Go left or straight",
-  16: "Go right or straight",
-  17: "Go straight",
-  18: "Go straight or right",
-  19: "Heavy Vehicle Accidents",
-  20: "Horn",
-  21: "No Car",
-  22: "No U-turn",
-  23: "No entry",
-  24: "No horn",
-  25: "No stopping",
-  26: "Road Divider",
-  27: "Roundabout mandatory",
-  28: "Speed limit (15km/h)",
-  29: "Speed limit (30km/h)",
-  30: "Speed limit (40km/h)",
-  31: "Speed limit (50km/h)",
-  32: "Speed limit (5km/h)",
-  33: "Speed limit (60km/h)",
-  34: "Speed limit (70km/h)",
-  35: "Train Crossing",
-  36: "Under Construction",
-  37: "Unknown Sign Type 1",
-  38: "Unknown Sign Type 2",
-  39: "Unknown Sign Type 3",
-  40: "Unknown Sign Type 4",
-  41: "Unknown Sign Type 5",
-  42: "Unknown Sign Type 6",
-  43: "Unknown Sign Type 7",
-  44: "Unknown Sign Type 8",
-  45: "U-turn",
-  46: "Zebra Crossing",
-  47: "ZigZag Curve",
-  48: "Keep Left",
-  49: "Keep Right",
-  50: "Speed limit (80km/h)",
-  51: "Watch out for cars",
-};
 
 const ResultPage: React.FC = () => {
   const navigate = useNavigate();
   const { state } = useLocation() as {
-    state: { prediction: string; confidence?: number; image: string };
+    state: {
+      prediction: string;
+      confidence?: number;
+      image: string;
+      className?: string;
+    };
   };
 
   const [description, setDescription] = useState<string | null>(null);
@@ -74,15 +25,16 @@ const ResultPage: React.FC = () => {
   console.log("Raw prediction value:", state?.prediction);
   console.log("Prediction type:", typeof state?.prediction);
   console.log("Confidence:", state?.confidence);
-  console.log("Available label keys:", Object.keys(labelMap));
+  console.log("Class name:", state?.className);
 
-  // Convert prediction to string and get sign name
-  const predictionKey = String(state?.prediction || "");
-  const signName = labelMap[predictionKey] || "Unknown Sign";
+  // Get sign name from state or labelMap
+  const signName =
+    state?.className ||
+    labelMap[Number.parseInt(state?.prediction || "0")] ||
+    "Unknown Sign";
   const isUnknown = signName.includes("Unknown") || signName === "Unknown Sign";
   const confidence = state?.confidence;
 
-  console.log("Prediction key:", predictionKey);
   console.log("Sign name:", signName);
   console.log("Is unknown:", isUnknown);
 
@@ -90,6 +42,7 @@ const ResultPage: React.FC = () => {
     const fetchDescription = async () => {
       setIsLoading(true);
       try {
+        // Call your existing backend API
         const response = await axios.post(
           "https://traffic-sign-scanner-server.vercel.app/api/get-sign-description",
           {
@@ -120,7 +73,6 @@ const ResultPage: React.FC = () => {
         console.log("Error sharing", error);
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       try {
         await navigator.clipboard.writeText(
           `Traffic Sign: ${signName} - ${window.location.href}`
@@ -314,7 +266,7 @@ const ResultPage: React.FC = () => {
                 <strong>Confidence:</strong> {confidence}
               </p>
               <p>
-                <strong>Label Map Key:</strong> {predictionKey}
+                <strong>Class Name:</strong> {state?.className}
               </p>
               <p>
                 <strong>Sign Name:</strong> {signName}
